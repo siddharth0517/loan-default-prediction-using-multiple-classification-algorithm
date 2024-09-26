@@ -1,4 +1,3 @@
-from sklearn.naive_bayes import GaussianNB
 import streamlit as st
 import pandas as pd
 import joblib
@@ -26,12 +25,11 @@ logistic_model = joblib.load('logistic_model.pkl')
 knn_model = joblib.load('knn_model.pkl')
 svm_model = joblib.load('svm_model.pkl')
 dtree_model = joblib.load('dtree_model.pkl')
-naive_bayes_model = joblib.load('nb_model.pkl')
 randomForest_model = joblib.load('rf_model.pkl')
 
 # Sidebar options for model selection
 st.sidebar.subheader("Choose Classification Model")
-model_option = st.sidebar.selectbox("Select Model", ('Logistic Regression', 'KNN Classifier', 'SVM Classifier', 'Decision Tree', 'Naive Bayes', 'Random Forest'))
+model_option = st.sidebar.selectbox("Select Model", ('Logistic Regression', 'KNN Classifier', 'SVM Classifier', 'Decision Tree', 'Random Forest'))
 
 # Preprocessing function (same as training)
 def preprocess_data(data):
@@ -104,8 +102,6 @@ elif model_option == 'SVM Classifier':
     prediction = svm_model.predict(user_input_processed)
 elif model_option == 'Decision Tree':
     prediction = dtree_model.predict(user_input_processed)
-elif model_option == 'Naive Bayes':
-    prediction = naive_bayes_model.predict(user_input_processed)
 elif model_option == 'Random Forest':
     prediction = randomForest_model.predict(user_input_processed)
 
