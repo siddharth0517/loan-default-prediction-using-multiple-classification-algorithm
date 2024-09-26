@@ -1,25 +1,13 @@
-from sklearn.naive_bayes import GaussianNB
 import streamlit as st
 import pandas as pd
+import numpy as np
 import joblib
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
+from sklearn.compose import ColumnTransformer
 
 # Title and description
 st.title("Loan Default Prediction App")
 st.write("This app predicts whether a loan will default based on various borrower and loan characteristics.")
-
-# Load data
-@st.cache_data
-def load_data():
-    data = pd.read_csv('Loan_default.csv')
-    return data
-
-data = load_data()
-
-# Display dataset
-st.subheader("Loan Dataset")
-st.write("Below is the first few rows of the dataset used to predict loan defaults.")
-st.write(data.head())
 
 # Load the pre-trained models
 logistic_model = joblib.load('log_reg_model.pkl')
@@ -32,24 +20,6 @@ randomForest_model = joblib.load('rf_model.pkl')
 # Sidebar options for model selection
 st.sidebar.subheader("Choose Classification Model")
 model_option = st.sidebar.selectbox("Select Model", ('Logistic Regression', 'KNN Classifier', 'SVM Classifier', 'Decision Tree', 'Naive Bayes', 'Random Forest'))
-
-# Preprocessing function (same as training)
-def preprocess_data(data):
-    # Drop LoanID
-    data = data.drop('LoanID', axis=1)
-    
-    # Encode categorical variables
-    le = LabelEncoder()
-    categorical_cols = ['Education', 'EmploymentType', 'MaritalStatus', 'HasMortgage', 'HasDependents', 'LoanPurpose', 'HasCoSigner']
-    for col in categorical_cols:
-        data[col] = le.fit_transform(data[col])
-    
-    # Scale numerical features
-    numerical_cols = ['Age', 'Income', 'LoanAmount', 'CreditScore', 'MonthsEmployed', 'NumCreditLines', 'InterestRate', 'LoanTerm', 'DTIRatio']
-    scaler = StandardScaler()
-    data[numerical_cols] = scaler.fit_transform(data[numerical_cols])
-    
-    return data
 
 # Sidebar input for user prediction
 st.sidebar.subheader("User Input Features")
@@ -91,6 +61,18 @@ user_input = pd.DataFrame({
     'LoanPurpose': [loan_purpose],
     'HasCoSigner': [has_cosigner]
 })
+
+# Preprocessing function
+def preprocess_data(input_data):
+    # OneHotEncoder for categorical variables
+    ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [9, 10, 11, 12, 13, 14, 15])], remainder='passthrough')
+    input_data = np.array(ct.fit_transform(input_data))
+    
+    # StandardScaler for numerical features
+    sc = StandardScaler()
+    input_data[:, :-7] = sc.fit_transform(input_data[:, :-7])
+    
+    return input_data
 
 # Preprocess user input
 user_input_processed = preprocess_data(user_input)
